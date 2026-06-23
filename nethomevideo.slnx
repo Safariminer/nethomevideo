@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="nethomevideo/nethomevideo.vcxproj" Id="caa3ec1f-970d-48d1-a35a-4fdb6def2ad3" />
+</Solution>
