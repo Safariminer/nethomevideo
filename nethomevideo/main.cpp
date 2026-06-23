@@ -75,6 +75,8 @@ int main(int argc, char** argv) {
 		}
 
 		DVDDirectoryLayout* layout = getLayoutInfo(dvdPath);
+		std::println("DVD at {} has {} title sets.", 
+			dvdPath, layout->videoTs.titleSetCount);
 	}
 	catch (std::exception& e) {
 		std::println("[FATAL] {} : {}", typeid(e).name(), e.what());

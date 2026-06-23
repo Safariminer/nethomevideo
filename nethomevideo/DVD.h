@@ -15,6 +15,8 @@ struct AudioTSInfo {
 // info about the VIDEO_TS folder
 struct VideoTSInfo {
 	bool exists = false;
+	bool hasVMG = false; // checks for VIDEO_TS/VIDEO_TS.IFO
+	int titleSetCount = 0;
 };
 
 // info about the DVD's directory's layout
@@ -25,6 +27,5 @@ struct DVDDirectoryLayout {
 
 // get a corresponding DVDDirectoryLayout for a DVD's root directory
 DVDDirectoryLayout* getLayoutInfo(std::string dvdPath);
-
 
 #endif//NETHOMEVIDEO_DVD_H

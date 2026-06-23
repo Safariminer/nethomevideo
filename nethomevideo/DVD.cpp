@@ -5,6 +5,56 @@
 #include <iostream>
 #include <filesystem>
 #include <print>
+#include <fstream>
+
+// Fill out a VideoTSInfo struct from a "[...]/VIDEO_TS" path
+void FillOutVideoTS(VideoTSInfo* info, std::string path) {
+	namespace fs = std::filesystem;
+
+	const std::string vmgPath = path + "\\VIDEO_TS.IFO";
+
+	if (fs::exists(vmgPath)) {
+		if (fs::is_regular_file(vmgPath)) {
+			std::println("VMG(VIDEO_TS.IFO) successfully found");
+			info->hasVMG = true;
+
+			// read vmg
+			const size_t vmgSize = fs::file_size(vmgPath);
+			char* ifoContents = (char*)malloc(vmgSize);
+			std::ifstream in(vmgPath);
+			in.read(ifoContents, vmgSize);
+			in.close();
+
+			// assume little endian
+			unsigned short titleSetFromVMG;
+			memcpy(&titleSetFromVMG, ifoContents + 0x003e, 2);
+			titleSetFromVMG = _byteswap_ushort(titleSetFromVMG);
+			
+			info->titleSetCount = (int)titleSetFromVMG;
+
+			// discard vmg
+			free(ifoContents);
+
+		}
+		else {
+			throw std::logic_error(
+				std::format(
+					"VMG(VIDEO_TS.IFO) found in {}, but not a regular file. Could be a directory or a device.",
+					path
+				)
+			);
+		}
+	}
+	else {
+		throw std::out_of_range(
+			std::format(
+				"No VMG(VIDEO_TS.IFO) found in {}. Cannot be a valid DVD.",
+				path
+			)
+		);
+	}
+
+}
 
 DVDDirectoryLayout* getLayoutInfo(std::string dvdPath) {
 	namespace fs = std::filesystem;
@@ -34,8 +84,9 @@ DVDDirectoryLayout* getLayoutInfo(std::string dvdPath) {
    // [CRITICAL]
 	if (fs::exists(videoTsPath)) {
 		if (fs::is_directory(videoTsPath)) {
-			layout->videoTs.exists = true;
 			std::println("'VIDEO_TS' directory found within {}.", dvdPath);
+			layout->videoTs.exists = true;
+			FillOutVideoTS(&(layout->videoTs), videoTsPath);
 		}
 		else {
 			throw std::logic_error(
@@ -55,8 +106,9 @@ DVDDirectoryLayout* getLayoutInfo(std::string dvdPath) {
 		);
 	}
 
-	// check for AUDIO_TS directory in <dvdPath>/
-   // [OPTIONAL]
+
+	 // check for AUDIO_TS directory in <dvdPath>/
+    // [OPTIONAL]
 	if (fs::exists(audioTsPath)) {
 		if (fs::is_directory(audioTsPath)) {
 			layout->audioTs.exists = true;
